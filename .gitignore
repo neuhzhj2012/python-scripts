@@ -1,0 +1,13 @@
+.idea
+data
+rst
+Auto_*.py
+*.txt
+*.pyc
+*.jpg
+*.png
+*.JPEG
+*.zip
+*.tar
+
+
