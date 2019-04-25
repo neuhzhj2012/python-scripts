@@ -77,11 +77,3 @@ if __name__=='__main__':
                     cv2.imwrite(dst_abspath, img_crop)
         except:
             print '##{} error##', name
-
-
-
-
-
-
-
-
