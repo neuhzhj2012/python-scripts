@@ -3,7 +3,7 @@
 生成视频，并保存图片
 """
 import cv2
-import os
+import os,sys
 import re
 import imageio
 import numpy as np
@@ -14,13 +14,13 @@ class VideoMaker():
     def __init__(self):
         self.__codec__ = cv2.VideoWriter_fourcc('M','J','P','G')
         self.__codec__ = cv2.VideoWriter_fourcc('m','p','4','v') #视频编码格式
-        self.__fps__ = 25
+        self.__fps__ = 28
         self.__width__ = 100
         self.__height__ = 80
         self.__dstPath__='data'
 
         pass
-    def tryint(s):
+    def tryint(self, s):
         try:
             return int(s)
         except ValueError:
@@ -39,8 +39,8 @@ class VideoMaker():
         frame = cv2.imread(os.path.join(imageFolder, images[0]))
         height, width, layers = frame.shape
         fps = self.__fps__
-        video = cv2.VideoWriter(videoName, self.__codec__, fps, (width,height))
-
+        video = cv2.VideoWriter(videoName, self.__codec__, fps, (width,height)) #生成的视频内存较大，数据速率和总比特率大
+        # video.set(cv2.VIDEOWRITER_PROP_QUALITY, 0.001)  #对视频内存没帮助，设置前后内存不改变
         for image in images:
             video.write(cv2.imread(os.path.join(imageFolder, image)))
 
@@ -131,6 +131,9 @@ class VideoCheck():
 
     def getFileAudio(self):
         audio = self.__file_ffmpeg__.audio
+        t=0.2 #时间
+        audio_frame = audio.get_frame(t)
+        print type(audio_frame)
         return audio
 
     def getFileFPS(self):
@@ -146,6 +149,14 @@ class VideoCheck():
 
     def getFrameHidth(self):
         return int(self.__file_cv2__.get(self.__cap_frame_height__))
+
+    def getFrameAtTime(self, t):
+        tm_total = self.__file_ffmpeg__.duration #时间单位:s
+        print tm_total
+        assert t<tm_total, 'video tm: {}'.format(tm_total)
+        img_rgb= self.__file_ffmpeg__.get_frame(t)
+        # return img_rgb[:,:,::-1]
+        return img_rgb[:,:,(2,1,0)]
 
     def __sizeConvert__(self, size):  # 单位换算
         K, M, G = 1024, 1024 ** 2, 1024 ** 3
@@ -179,18 +190,24 @@ class VideoCheck():
 if __name__=='__main__':
     maker = VideoMaker()
     # maker.createVideoFromCamera()
+    maker.createVideoFromFiles('data/xiaoshipin/tmp', 'tmp.mp4')
+    sys.exit()
     # maker.createGif('data\\tmp')
     # releaseVideo()
     # 视频信息查看
     Info = VideoCheck()
     name='rst/tmp.mp4'
     Info.setPath(name)
-    print 'size:',Info.getFileSize()
-    print 'time:',Info.getFileTimes()
-    print 'fps:',Info.getFileFPS()
-    print 'count:',Info.getFileCount()
-    print 'frame w: {}, h: {}'.format(Info.getFrameWidth(), Info.getFrameHidth())
-    audio = Info.getFileAudio()
+    # print 'size:',Info.getFileSize()
+    # print 'time:',Info.getFileTimes()
+    # print 'fps:',Info.getFileFPS()
+    # print 'count:',Info.getFileCount()
+    # print 'frame w: {}, h: {}'.format(Info.getFrameWidth(), Info.getFrameHidth())
+    tm = 0
+    img_tm = Info.getFrameAtTime(tm)
+    cv2.imwrite(os.path.join('rst', str(tm)+'.jpg'), img_tm)
+    audio = Info.getFileAudio()  #音频文件
     audio.write_audiofile('tmp.mp3')
-    print dir(audio)
+    #
+    # print dir(audio)
 
