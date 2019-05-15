@@ -8,6 +8,7 @@ import re
 import imageio
 import numpy as np
 from moviepy.editor import VideoFileClip
+import wave
 
 class VideoMaker():
     def __init__(self):
@@ -102,48 +103,59 @@ class VideoCheck():
     def __init__(self):
         self.__cap_prop_fps__ = cv2.CAP_PROP_FPS
         self.__cap_prop_frame_count__ = cv2.CAP_PROP_FRAME_COUNT
+        self.__cap_frame_width__ = cv2.CAP_PROP_FRAME_WIDTH
+        self.__cap_frame_height__ = cv2.CAP_PROP_FRAME_HEIGHT
         self.__file_name__=None
-        self.__file_obj__ = None
+        self.__file_cv2__ = None
+        self.__file_ffmpeg__ = None
         pass
 
-    def getFileSize(self, filename):
+    def setPath(self, filename):
+        self.__file_name__ = filename
+        self.__file_cv2__ = cv2.VideoCapture(filename)
+        self.__file_ffmpeg__ = VideoFileClip(filename)
+
+    def getFileSize(self):
         u"""
         获取文件大小（M: 兆）
         """
-        file_byte = os.path.getsize(filename)
+        file_byte = os.path.getsize(self.__file_name__)
         return self.__sizeConvert__(file_byte)
 
-    def getFileTimes(self, filename):
+    def getFileTimes(self):
         u"""
         获取视频时长（s:秒）
         """
-        clip = VideoFileClip(filename)
+        clip = self.__file_ffmpeg__
         return self.__timeConvert__(clip.duration)
 
-    def getFileFPS(self,filename):
-        video = self.get_fileObj(filename)
-        fps = video.get(self.__cap_prop_fps__)
+    def getFileAudio(self):
+        audio = self.__file_ffmpeg__.audio
+        return audio
+
+    def getFileFPS(self):
+        fps = self.__file_cv2__.get(self.__cap_prop_fps__)
         return fps
 
-    def getFileCount(self,filename):
-        video = self.get_fileObj(filename)
-        count = video.get(self.__cap_prop_frame_count__)
-        return count
+    def getFileCount(self):
+        count = self.__file_cv2__.get(self.__cap_prop_frame_count__)
+        return int(count)
 
-    def get_fileObj(self, filename):
-        if filename != self.__file_name__:
-            self.__file_name__=filename
-            self.__file_obj__ = cv2.VideoCapture(filename)
-        video = self.__file_obj__
-        return video
+    def getFrameWidth(self):
+        return int(self.__file_cv2__.get(self.__cap_frame_width__))
+
+    def getFrameHidth(self):
+        return int(self.__file_cv2__.get(self.__cap_frame_height__))
 
     def __sizeConvert__(self, size):  # 单位换算
         K, M, G = 1024, 1024 ** 2, 1024 ** 3
+        size *=1.0
         if size >= G:
-            return str(size / G) + 'G Bytes'
+            return '%.2f G Bytes' % (size / G)
         elif size >= M:
-            return str(size / M) + 'M Bytes'
+            return '%.2f M Bytes' % (size / M)
         elif size >= K:
+            return '%.2f K Bytes' % (size / K)
             return str(size / K) + 'K Bytes'
         else:
             return str(size) + 'Bytes'
@@ -162,17 +174,23 @@ class VideoCheck():
             return tim_srt
 
 # def save():
-#     os.system("ffmpeg -r 1 -i img%01d.png -vcodec mpeg4 -y movie.mp4")
+#     os.system("ffmpeg -r 1 -i img%01d.png -vcodec mpeg4 -y movie.mp4") #图片组合为视频
 
 if __name__=='__main__':
     maker = VideoMaker()
     # maker.createVideoFromCamera()
-    maker.createGif('data\\tmp')
+    # maker.createGif('data\\tmp')
     # releaseVideo()
     # 视频信息查看
-    # Info = VideoCheck()
-    # name='video.avi'
-    # print 'size:',Info.getFileSize(name)
-    # print 'time:',Info.getFileTimes(name)
-    # print 'fps:',Info.getFileFPS(name)
-    # print 'count:',Info.getFileCount(name)
+    Info = VideoCheck()
+    name='rst/tmp.mp4'
+    Info.setPath(name)
+    print 'size:',Info.getFileSize()
+    print 'time:',Info.getFileTimes()
+    print 'fps:',Info.getFileFPS()
+    print 'count:',Info.getFileCount()
+    print 'frame w: {}, h: {}'.format(Info.getFrameWidth(), Info.getFrameHidth())
+    audio = Info.getFileAudio()
+    audio.write_audiofile('tmp.mp3')
+    print dir(audio)
+
