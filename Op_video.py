@@ -7,7 +7,9 @@ import os,sys
 import re
 import imageio
 import numpy as np
+import PIL.Image as Image
 from moviepy.editor import VideoFileClip
+from subprocess import Popen, PIPE
 import wave
 
 class VideoMaker():
@@ -47,6 +49,28 @@ class VideoMaker():
         cv2.destroyAllWindows()
         video.release()
 
+    def createVideoFromFilesFFmpeg(self, imageFolder, videoName='video.avi', imgSuffix='.jpg'):
+        p = Popen(
+            ['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', '28', '-i', '-', '-vcodec', 'h264',
+             '-qscale',
+             '5', '-r', '24', 'video.mp4'], stdin=PIPE)
+
+        video = cv2.VideoCapture('tmp.mp4')  #输入视频
+
+        while True:
+            ret, frame = video.read()
+            if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                im = Image.fromarray(frame)
+                im.save(p.stdin, 'JPEG')
+            else:
+                break
+
+        p.stdin.close()
+        p.wait()
+        video.release()
+        cv2.destroyAllWindows()
+
     def createVideoFromCamera(self, imageFolder='data', videoName='video.avi'):
         # 创建显示视频的窗口
         cv2.namedWindow('Video')
@@ -81,6 +105,9 @@ class VideoMaker():
         cv2.destroyWindow('Video')
         video_capture.release()
 
+    def mergeMp3ToMp4(self, mp3Path, mp4Path, rstName='merge.mp4'):
+        video = VideoFileClip(mp4Path)
+        video.write_videofile(rstName, audio=mp3Path)
     def createGif(self, imageFolder, gifName='mygif.gif', imgSuffix='.jpg'):
         images_for_gif = []
         images = [img for img in os.listdir(imageFolder) if img.endswith(imgSuffix)]
@@ -185,18 +212,21 @@ class VideoCheck():
             return tim_srt
 
 # def save():
-#     os.system("ffmpeg -r 1 -i img%01d.png -vcodec mpeg4 -y movie.mp4") #图片组合为视频
+#     os.system("ffmpeg -r 28 -i img%01d.png -vcodec mpeg4 -y movie.mp4") #图片组合为视频,数据速率较小，得到的视频内存也较小
 
 if __name__=='__main__':
     maker = VideoMaker()
     # maker.createVideoFromCamera()
-    maker.createVideoFromFiles('data/xiaoshipin/tmp', 'tmp.mp4')
-    sys.exit()
-    # maker.createGif('data\\tmp')
+    # maker.createVideoFromFiles('data/xiaoshipin/tmp', 'tmp.mp4') #基于文件生成视频 cv2
+    # maker.mergeMp3ToMp4('tmp.mp3', 'tmp.mp4')
+    # maker.createGif('data\\tmp') #gif生成器
+    # sys.exit()
+
     # releaseVideo()
+
     # 视频信息查看
     Info = VideoCheck()
-    name='rst/tmp.mp4'
+    name='data/xiaoshipin/2.mp4'
     Info.setPath(name)
     # print 'size:',Info.getFileSize()
     # print 'time:',Info.getFileTimes()
