@@ -105,6 +105,14 @@ class VideoMaker():
         cv2.destroyWindow('Video')
         video_capture.release()
 
+    def setVideoPoster(self, videoName, posterName, outName):
+        #ffmpeg使用绝对路径
+        # cmd = 'ffmpeg -i G:/Python/python_scripts/rst/1.mp4 -i G:/Python/python_scripts/rst/0.jpg -map 0 -map 1 -c copy -c:v:1 png -disposition:v:1 attached_pic out.mp4'
+        cmd = 'ffmpeg -i {} -i {} -map 0 -map 1 -c copy -c:v:1 png -disposition:v:1 attached_pic {}'.format(videoName, posterName, outName)
+        os.system(cmd)
+
+
+
     def mergeMp3ToMp4(self, mp3Path, mp4Path, rstName='merge.mp4'):
         video = VideoFileClip(mp4Path)
         video.write_videofile(rstName, audio=mp3Path)
@@ -215,12 +223,21 @@ class VideoCheck():
 #     os.system("ffmpeg -r 28 -i img%01d.png -vcodec mpeg4 -y movie.mp4") #图片组合为视频,数据速率较小，得到的视频内存也较小
 
 if __name__=='__main__':
+    # #设置封面poster frame
+    cmd = 'ffmpeg -i G:/Python/python_scripts/rst/1.mp4 -i G:/Python/python_scripts/rst/0.jpg -map 0 -map 1 -c copy -c:v:1 png -disposition:v:1 attached_pic out.mp4'
+    os.system(cmd)
+    sys.exit()
+
     maker = VideoMaker()
+    mp4_path = 'G:/Python/python_scripts/rst/1.mp4'
+    img_path = 'G:/Python/python_scripts/rst/0.jpg'
+    maker.setVideoPoster(mp4_path, img_path,'G:/Python/python_scripts/rst/poster_diy.mp4')
+    # maker.releaseVideo(filename='rst/out.mp4',dst_folder='rst/out')
     # maker.createVideoFromCamera()
     # maker.createVideoFromFiles('data/xiaoshipin/tmp', 'tmp.mp4') #基于文件生成视频 cv2
     # maker.mergeMp3ToMp4('tmp.mp3', 'tmp.mp4')
     # maker.createGif('data\\tmp') #gif生成器
-    # sys.exit()
+    sys.exit()
 
     # releaseVideo()
 
