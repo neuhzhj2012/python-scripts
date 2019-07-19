@@ -3,28 +3,15 @@
 图像清晰度评价(模糊判断)
 https://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
 '''
-from imutils import paths
 import argparse
 import cv2
 import os
-
+import numpy as np
+import shutil
 
 class BlurDet():
     def __init__(self):
         pass
-
-    def BrennerDetection(self, img_gray):
-        '''
-        无法区分自建数据集中的是否模糊图片
-        :param img_gray: 灰度图
-        :return:
-        '''
-        img_h, img_w = img_gray.shape
-        score = 0
-        for i in range(img_h):
-            for j in range(img_w - 2):
-                score += (int(img_gray[i, j + 2]) - int(img_gray[i, j])) ** 2
-        return score / 100000
     def variance_of_laplacian(self, img_gray):
         '''
         无法区分自建数据集中的是否模糊图片
@@ -34,6 +21,15 @@ class BlurDet():
         # compute the Laplacian of the image and then return the focus
         # measure, which is simply the variance of the Laplacian
         return cv2.Laplacian(img_gray, cv2.CV_64F).var()
+
+    def getIllumination(self, img):
+        assert img.shape[-1] == 3, 'color image needed!'
+        img2hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        imgValue = img2hsv[:,:,-1]
+        mask = imgValue > 0
+        print ('mask num: {}'.format(mask.tolist().count(True)))
+        return np.mean(imgValue) #全局平均
+        # return np.mean(imgValue[mask]) #掩码平均
 
 def getAllFiles(folder, strType='jpg'):
     names = []
@@ -56,19 +52,30 @@ def get_param():
 
 blurObj = BlurDet()
 # loop over the input images
-folder = 'D:\\Data\\Video\\blur'
+folder = 'D:\\Python\\Jupyter\\data\\sharpness'
+
 imgs = os.listdir(folder)
 imgs_path = [os.path.join(folder, img) for img in imgs]
-# for imagePath in paths.list_images(args["images"]):
+
 for imagePath in imgs_path:
-    # load the image, convert it to grayscale, and compute the
-    # focus measure of the image using the Variance of Laplacian
-    # method
     image = cv2.imread(imagePath)
+    if isinstance(image, type(None)):
+        print ('img: {} not exist'.format(os.path.basename(imagePath)))
+        continue
     img_rsz_width = 400
-    image = cv2.resize(image, (img_rsz_width, image.shape[0] * img_rsz_width/image.shape[1]), interpolation=cv2.INTER_CUBIC) #宽400
+    image = cv2.resize(image, (img_rsz_width, int(image.shape[0] * img_rsz_width/image.shape[1])), interpolation=cv2.INTER_CUBIC) #宽400
+    image = cv2.resize(image, (img_rsz_width, img_rsz_width), interpolation=cv2.INTER_CUBIC) #宽400
+
+    #亮度判断
+    illu_value = blurObj.getIllumination(image)
+    if illu_value < 30 or illu_value > 230:
+        shutil.copy(imagePath, 'rst/%.2f_%s'%(illu_value, os.path.basename(imagePath)))
+        print ('img: {}, illumination: {}'.format(os.path.basename(imagePath), illu_value))
+    continue
+
+    #judge blur ,即使相同分辨率也无法判定模糊图片的阈值
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    fm = blurObj.variance_of_laplacian(gray)
+    fm = blurObj.variance_of_laplacian(gray) #laplace无法确定阈值
     text = "Not Blurry"
 
     # if the focus measure is less than the supplied threshold,
