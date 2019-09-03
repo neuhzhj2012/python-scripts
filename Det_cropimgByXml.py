@@ -8,7 +8,10 @@ from gevent import monkey
 
 monkey.patch_all()
 
-classes = ['cat','person']
+classes = ['dadeng','weideng','houshijing','qianwudeng','luntai','zhongwang',
+           'fengdang','bashou','jinqikou','youxiangkou','kongzhitai','fangxiangpan',
+           'yibiaopan','biansugan','hpkongtiao','hpfengkou', 'hpyejingping']
+
 
 def parseXml(xml_path):
     tree = ET.parse(xml_path)
@@ -134,3 +137,4 @@ if __name__=='__main__':
                     cv2.imwrite(dst_abspath, img_crop)
         except:
             print '##{} error##', name
+
