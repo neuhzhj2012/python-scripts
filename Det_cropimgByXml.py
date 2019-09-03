@@ -131,6 +131,23 @@ def parseXml(xml_path):
         x2=min(w, xmax)
         y2=min(h, ymax)
         class_loc[cls].append([x1,y1,x2,y2])
+        '''
+        for xmlbox in  obj.iter('bndbox'):
+        #xmlbox = obj.find('bndbox')
+            x1 = int(float(xmlbox.find('xmin').text))
+            x2 = int(float(xmlbox.find('xmax').text))
+            y1 = int(float(xmlbox.find('ymin').text))
+            y2 = int(float(xmlbox.find('ymax').text))
+            xmin=min(x1, x2)
+            ymin=min(y1, y2)
+            xmax=max(x1, x2)
+            ymax=max(y1, y2)
+            x1=max(0, xmin)
+            y1=max(0, ymin)
+            x2=min(w, xmax)
+            y2=min(h, ymax)
+            class_loc[cls].append([x1,y1,x2,y2])
+        '''
     return (h,w),class_loc
 
 def getXmls(root_folder):
@@ -159,7 +176,7 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_cropNotDraw=Tru
                     cv2.imwrite(dst_abspath, img_crop)
         else:
             for obj, locs in parts.iteritems():
-                dst_name = xml_name[:-4] + "_draw" + '.jpg'
+                dst_name = xml_name[:-4] + '.jpg'
                 dst_abspath = os.path.join(dst_folder, dst_name)
                 color = cmap[classes.index(obj)%len(classes)].astype( np.uint8).tolist()
                 for idx, loc in enumerate(locs):
@@ -211,18 +228,18 @@ if __name__=='__main__':
             os.makedirs(dst_folder)
 
     xmls = getXmls(xml_folder)
-
+    #xmls = ['00043251505971_3832319_16.jpg.xml']
 
     task_start(xmls, 1000, xml_folder, img_folder, dst_folder, flag_cropNotDraw)
-
     exit()
 
-    for name in xmls:
+    for xml_name in xmls:
         try:
-            xml_abspath=os.path.join(xml_folder, name)
+            xml_abspath=os.path.join(xml_folder, xml_name)
             img_size, parts = parseXml(xml_abspath)
+            print (parts)
             if len(parts)==0:
-                print ("##{} has no objects##".format(name))
+                print ("##{} has no objects##".format(xml_name))
                 continue
 
             img_name=name.replace('xml','jpg')
@@ -231,14 +248,25 @@ if __name__=='__main__':
 
             assert img.shape[:2]==img_size,'##{} imgsize not match##'.format(name)
 
-            #保存单个目标区域
-            for obj, locs in parts.iteritems():
-                for idx,loc in enumerate(locs):
-                    dst_name=name[:-4] +"_" + str(idx) + '.jpg'
-                    dst_abspath=os.path.join(dst_folder, obj, dst_name)
-                    x1, y1,x2,y2=loc
-                    img_crop=img[y1:y2,x1:x2,:]
-                    cv2.imwrite(dst_abspath, img_crop)
+            if flag_cropNotDraw:
+                # 保存单个目标区域
+                for obj, locs in parts.iteritems():
+                    for idx, loc in enumerate(locs):
+                        dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
+                        dst_abspath = os.path.join(dst_folder, obj, dst_name)
+                        x1, y1, x2, y2 = loc
+                        img_crop = img[y1:y2, x1:x2, :]
+                        cv2.imwrite(dst_abspath, img_crop)
+            else:
+                for obj, locs in parts.iteritems():
+                    print ('{} num: {}'.format(obj, len(locs)))
+                    dst_name = xml_name[:-4] + '.jpg'
+                    dst_abspath = os.path.join(dst_folder, dst_name)
+                    color = cmap[classes.index(obj) % len(classes)].astype(np.uint8).tolist()
+                    for idx, loc in enumerate(locs):
+                        x1, y1, x2, y2 = loc
+                        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+                cv2.imwrite(dst_abspath, img)
         except:
             print '##{} error##', name
 
