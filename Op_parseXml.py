@@ -19,7 +19,7 @@ class XML():
                 E.depth(anno['channel'])
             ),
         )
-        return anno_tree
+        return anno_tree  #anno_tree.append(writeXmlSubRoot(anno))
 
     def writeXmlSubRoot(self, anno, bbox_type='xyxy'):
         #增加xml的子字段
