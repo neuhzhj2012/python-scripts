@@ -27,9 +27,9 @@ def fetch(url, name, folder):
             fp.write(res.content)
         '''
         tm_end = time.time()
-        print 'name: {} done, tm_svc: {}'.format(name, tm_end-tm_start)
-    except Exception, e:
-        print "####name: {}, error: {}####".format(name,e)
+        print ('name: {} done, tm_svc: {}'.format(name, tm_end-tm_start))
+    except Exception as e:
+        print ("####name: {}, error: {}####".format(name,e))
 
         if os.path.exists(abspath):
             os.remove(abspath)
