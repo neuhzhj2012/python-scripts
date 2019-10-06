@@ -221,14 +221,14 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         self.interval = self.interval * interval # multiply by units requested
         if os.path.exists(filename):
             t = os.stat(filename)[ST_MTIME]
-            print ('exist')
+            # print ('exist')
         else:
             t = int(time.time())
         value_tmp = time.strftime(self.suffix, time.gmtime(t)) #suffix only support num
         t = value_tmp + '0'*(14-len(value_tmp))
         t = int(time.mktime(time.strptime(t, "%Y%m%d%H%M%S")))
         self.rolloverAt = self.computeRollover(t)
-        print ('init At: {}'.format(self.rolloverAt))
+        # print ('init At: {}'.format(self.rolloverAt))
 
     def computeRollover(self, currentTime):
         """
@@ -299,7 +299,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         """
         t = int(time.time())
         if t >= self.rolloverAt:
-            print ('##{} gt {}##'.format(t, self.rolloverAt))
+            # print ('##{} gt {}##'.format(t, self.rolloverAt))
             return 1
         #print "No need to rollover: %d, %d" % (t, self.rolloverAt)
         return 0
@@ -360,7 +360,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         #if not self.delay:
         strsuffix = time.strftime(self.suffix, time.gmtime(currentTime))
         self.baseFilename = self.baseFilename[:self.baseFilename.rindex('.')] + "." + strsuffix
-        print ('!!rename {}!!'.format(self.baseFilename))
+        # print ('!!rename {}!!'.format(self.baseFilename))
         self.stream = self._open()
         value_tmp = time.strftime(self.suffix, time.gmtime(currentTime)) #suffix only support num
         currentTime = value_tmp + '0'*(14-len(value_tmp))
@@ -378,7 +378,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                     addend = 3600
                 newRolloverAt += addend
         self.rolloverAt = newRolloverAt
-        print ('**refresh At: {}**'.format(self.rolloverAt))
+        # print ('**refresh At: {}**'.format(self.rolloverAt))
 
 
 class WatchedFileHandler(logging.FileHandler):
