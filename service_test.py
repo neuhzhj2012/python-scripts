@@ -47,7 +47,7 @@ if __name__ == '__main__':
     session.mount('https://', adapter)
 
     for i in range(1):
-        svc_rtn = session.get(host)
+        svc_rtn = session.get(host, data={'service_type':'tmp', 'service_key':'1111555'})
 
         print('id: {}, info: {}'.format(i, svc_rtn.text))
 
