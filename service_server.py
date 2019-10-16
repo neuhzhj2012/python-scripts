@@ -85,8 +85,10 @@ class TornadoHandler(tornado.web.RequestHandler):
 
 
 def main(port):
-    print("Listen...")
-
+    loginfo.info('Listen...')
+    loginfo.exception('Listen...')
+    loginfo.error('Listen...')
+    loginfo.warn('Listen...')
     application = tornado.web.Application([(r"/test/dmcvrecog", TornadoHandler),(r"/test/health", MainHeartHandler)])
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(port)
