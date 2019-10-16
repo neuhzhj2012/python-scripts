@@ -35,8 +35,8 @@ class TornadoHandler(tornado.web.RequestHandler):
     @gen.coroutine  #自动调用 self.finish() 结束请求,可以不用tornado.web.asynchronous装饰器
     def get(self):
         params = self.request.body_arguments
-        print ('keys: {}, type: {}, key: {}'.format(params.keys(), str(params['service_type']), params['service_key']))
-
+        print ('keys: {}, type: {}, key: {}'.format(params.keys(),(params['service_type'][0]).decode('utf-8'), params['service_key'][0].decode('utf-8')))
+        print ('type equal: {}'.format(params['service_type'][0].decode('utf-8')=='tmp'))
         try:
             class_sync = [{'id':0, 'name':'unknown'}, {'id':1, 'name':'known'}]
             result = {'message': 'OK', 'returncode': 0, 'result': class_sync}

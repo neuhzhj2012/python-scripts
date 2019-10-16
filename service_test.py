@@ -51,6 +51,7 @@ if __name__ == '__main__':
 
         print('id: {}, info: {}'.format(i, svc_rtn.text))
 
+    exit(1)
     key = 'zhimakaimen'
     if sys.version_info[0] == 3:
         headers={'Authorization':'Basic' + base64.b64encode(key.encode()).decode()}
