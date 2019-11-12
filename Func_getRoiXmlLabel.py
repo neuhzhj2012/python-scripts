@@ -10,6 +10,7 @@ from gevent import monkey
 
 monkey.patch_all()
 classes = ['car', 'bus', 'bicycle', 'motorbike', 'person']
+classes = ['car']
 
 def colormap(rgb=False):
     color_list = np.array(
@@ -158,7 +159,8 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_saveRoiXml = Fa
             img = cv2.imread(img_abspath)
 
             if flag_cropNotDraw: # 保存单个目标区域
-                for obj, locs in parts.iteritems():
+                # for obj, locs in parts.iteritems(): #py2
+                for obj, locs in parts.items():
                     for idx, loc in enumerate(locs):
                         dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
                         dst_abspath = os.path.join(dst_folder, obj, dst_name)
@@ -166,7 +168,8 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_saveRoiXml = Fa
                         img_crop = img[y1:y2, x1:x2, :]
                         cv2.imwrite(dst_abspath, img_crop)
             else:
-                for obj, locs in parts.iteritems():
+                # for obj, locs in parts.iteritems(): #py2
+                for obj, locs in parts.items():
                     dst_name = xml_name[:-4] + '.jpg'
                     dst_abspath = os.path.join(dst_folder, dst_name)
                     color = cmap[classes.index(obj)%len(classes)].astype( np.uint8).tolist()
@@ -206,8 +209,8 @@ if __name__=='__main__':
     img_folder = 'JPEGImages'
     dst_folder = 'cropImg'
 
-    flag_cropNotDraw = False  # 画整体结果，非裁剪成单独类别
-    flag_saveRoiXml = True #是否保留感兴趣类别的xml文件
+    flag_cropNotDraw = True  # 画整体结果，非裁剪成单独类别
+    flag_saveRoiXml = False #是否保留感兴趣类别的xml文件
     #初始化存图路径
     if flag_cropNotDraw:
         for obj in classes:
@@ -223,3 +226,38 @@ if __name__=='__main__':
     cmap = colormap()
 
     task_start(xmls, 1000, xml_folder, img_folder, dst_folder, flag_saveRoiXml, flag_cropNotDraw)
+
+    exit()
+    #调试
+    for xml_name in xmls:
+        xml_abspath=os.path.join(xml_folder, xml_name)
+        basic_info, parts = parseXml(xml_abspath)
+        print (parts)
+        if len(parts)==0:
+            print ("##{} has no objects##".format(xml_name))
+            continue
+
+        img_name=xml_name.replace('xml','jpg')
+        img_abspath =os.path.join(img_folder, img_name)
+        img = cv2.imread(img_abspath)
+
+        if flag_cropNotDraw:
+            # 保存单个目标区域
+            for obj, locs in parts.items():
+                for idx, loc in enumerate(locs):
+                    dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
+                    dst_abspath = os.path.join(dst_folder, obj, dst_name)
+                    x1, y1, x2, y2 = loc
+                    img_crop = img[y1:y2, x1:x2, :]
+                    cv2.imwrite(dst_abspath, img_crop)
+        else:
+            for obj, locs in parts.iteritems():
+                print ('{} num: {}'.format(obj, len(locs)))
+                dst_name = xml_name[:-4] + '.jpg'
+                dst_abspath = os.path.join(dst_folder, dst_name)
+                color = cmap[classes.index(obj) % len(classes)].astype(np.uint8).tolist()
+                for idx, loc in enumerate(locs):
+                    x1, y1, x2, y2 = loc
+                    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+            cv2.imwrite(dst_abspath, img)
+        break
