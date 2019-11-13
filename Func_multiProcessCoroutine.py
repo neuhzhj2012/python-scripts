@@ -5,7 +5,7 @@ import gevent
 import sys
 import os
 import numpy
-import urllib
+import urllib.request as urllib
 import time
 from gevent import monkey
 
@@ -37,7 +37,8 @@ def fetch(url, name, folder):
 def process_start(url_list, folder):
     tasks = []
     for idx, urlinfo in enumerate(url_list):
-        name, url=urlinfo.split()
+        url=urlinfo.decode('utf-8')
+        name=os.path.basename(urlinfo).decode('utf-8')
         tasks.append(gevent.spawn(fetch, url,name, folder))
     gevent.joinall(tasks)  # 使用协程来执行
 
@@ -48,13 +49,13 @@ def task_start(filepaths, batch_size=5, folder='./tmp'):  # 每batch_size条file
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    for idx in range(num / batch_size):
+    for idx in range(num // batch_size):
         url_list = filepaths[idx * batch_size:(idx + 1) * batch_size]
         p = Process(target=process_start, args=(url_list, folder,))
         p.start()
 
     if num % batch_size > 0:
-        idx = num / batch_size
+        idx = num // batch_size
         url_list = filepaths[idx * batch_size:]
         p = Process(target=process_start, args=(url_list, folder,))
         p.start()
