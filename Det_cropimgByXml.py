@@ -115,8 +115,8 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_cropNotDraw=Tru
 
         if flag_cropNotDraw:
             # 保存单个目标区域
-            #for obj, locs in parts.iteritems():
-            for obj, locs in parts.items():
+            #for obj, locs in parts.iteritems(): py2
+            for obj, locs in parts.items(): #py3
                 for idx, loc in enumerate(locs):
                     dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
                     dst_abspath = os.path.join(dst_folder, obj, dst_name)
@@ -199,7 +199,7 @@ if __name__=='__main__':
 
             if flag_cropNotDraw:
                 # 保存单个目标区域
-                for obj, locs in parts.iteritems():
+                for obj, locs in parts.items():
                     for idx, loc in enumerate(locs):
                         dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
                         dst_abspath = os.path.join(dst_folder, obj, dst_name)
@@ -207,7 +207,7 @@ if __name__=='__main__':
                         img_crop = img[y1:y2, x1:x2, :]
                         cv2.imwrite(dst_abspath, img_crop)
             else:
-                for obj, locs in parts.iteritems():
+                for obj, locs in parts.items():
                     print ('{} num: {}'.format(obj, len(locs)))
                     dst_name = xml_name[:-4] + '.jpg'
                     dst_abspath = os.path.join(dst_folder, dst_name)
