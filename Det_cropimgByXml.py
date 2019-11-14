@@ -9,95 +9,9 @@ from gevent import monkey
 
 monkey.patch_all()
 
-classes = ['dadeng','weideng','houshijing','qianwudeng','luntai','zhongwang',
-           'fengdang','bashou','jinqikou','youxiangkou','kongzhitai','fangxiangpan',
-           'yibiaopan','biansugan','hpkongtiao','hpfengkou', 'hpyejingping']
+classes = ['car']
 
 def colormap(rgb=False):
-    # color_list = np.array(
-    #     [
-    #         0.000, 0.447, 0.741,
-    #         0.850, 0.325, 0.098,
-    #         0.929, 0.694, 0.125,
-    #         0.494, 0.184, 0.556,
-    #         0.466, 0.674, 0.188,
-    #         0.301, 0.745, 0.933,
-    #         0.635, 0.078, 0.184,
-    #         0.300, 0.300, 0.300,
-    #         0.600, 0.600, 0.600,
-    #         1.000, 0.000, 0.000,
-    #         1.000, 0.500, 0.000,
-    #         0.749, 0.749, 0.000,
-    #         0.000, 1.000, 0.000,
-    #         0.000, 0.000, 1.000,
-    #         0.667, 0.000, 1.000,
-    #         0.333, 0.333, 0.000,
-    #         0.333, 0.667, 0.000,
-    #         0.333, 1.000, 0.000,
-    #         0.667, 0.333, 0.000,
-    #         0.667, 0.667, 0.000,
-    #         0.667, 1.000, 0.000,
-    #         1.000, 0.333, 0.000,
-    #         1.000, 0.667, 0.000,
-    #         1.000, 1.000, 0.000,
-    #         0.000, 0.333, 0.500,
-    #         0.000, 0.667, 0.500,
-    #         0.000, 1.000, 0.500,
-    #         0.333, 0.000, 0.500,
-    #         0.333, 0.333, 0.500,
-    #         0.333, 0.667, 0.500,
-    #         0.333, 1.000, 0.500,
-    #         0.667, 0.000, 0.500,
-    #         0.667, 0.333, 0.500,
-    #         0.667, 0.667, 0.500,
-    #         0.667, 1.000, 0.500,
-    #         1.000, 0.000, 0.500,
-    #         1.000, 0.333, 0.500,
-    #         1.000, 0.667, 0.500,
-    #         1.000, 1.000, 0.500,
-    #         0.000, 0.333, 1.000,
-    #         0.000, 0.667, 1.000,
-    #         0.000, 1.000, 1.000,
-    #         0.333, 0.000, 1.000,
-    #         0.333, 0.333, 1.000,
-    #         0.333, 0.667, 1.000,
-    #         0.333, 1.000, 1.000,
-    #         0.667, 0.000, 1.000,
-    #         0.667, 0.333, 1.000,
-    #         0.667, 0.667, 1.000,
-    #         0.667, 1.000, 1.000,
-    #         1.000, 0.000, 1.000,
-    #         1.000, 0.333, 1.000,
-    #         1.000, 0.667, 1.000,
-    #         0.167, 0.000, 0.000,
-    #         0.333, 0.000, 0.000,
-    #         0.500, 0.000, 0.000,
-    #         0.667, 0.000, 0.000,
-    #         0.833, 0.000, 0.000,
-    #         1.000, 0.000, 0.000,
-    #         0.000, 0.167, 0.000,
-    #         0.000, 0.333, 0.000,
-    #         0.000, 0.500, 0.000,
-    #         0.000, 0.667, 0.000,
-    #         0.000, 0.833, 0.000,
-    #         0.000, 1.000, 0.000,
-    #         0.000, 0.000, 0.167,
-    #         0.000, 0.000, 0.333,
-    #         0.000, 0.000, 0.500,
-    #         0.000, 0.000, 0.667,
-    #         0.000, 0.000, 0.833,
-    #         0.000, 0.000, 1.000,
-    #         0.000, 0.000, 0.000,
-    #         0.143, 0.143, 0.143,
-    #         0.286, 0.286, 0.286,
-    #         0.429, 0.429, 0.429,
-    #         0.571, 0.571, 0.571,
-    #         0.714, 0.714, 0.714,
-    #         0.857, 0.857, 0.857,
-    #         1.000, 1.000, 1.000
-    #     ]
-    # ).astype(np.float32)
-    # color_list = color_list.reshape((-1, 3)) * 255
     color_list = np.array(
         [
             255, 0, 0,
@@ -191,16 +105,18 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_cropNotDraw=Tru
         assert len(parts) != 0,"##{} has no objects##".format(xml_name)
 
         img_name = xml_name.replace('xml', 'jpg')
+        img_abspath = os.path.join(img_folder, img_name)
         if not os.path.exists(img_abspath):
             img_abspath = img_abspath.replace('jpg', 'JPG')
-        img_abspath = os.path.join(img_folder, img_name)
+        #img_abspath = os.path.join(img_folder, img_name)
         img = cv2.imread(img_abspath)
 
         assert img.shape[:2] == img_size, '##{} imgsize not match##'.format(xml_name)
 
         if flag_cropNotDraw:
             # 保存单个目标区域
-            for obj, locs in parts.iteritems():
+            #for obj, locs in parts.iteritems():
+            for obj, locs in parts.items():
                 for idx, loc in enumerate(locs):
                     dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
                     dst_abspath = os.path.join(dst_folder, obj, dst_name)
@@ -217,8 +133,8 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_cropNotDraw=Tru
                     cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
             cv2.imwrite(dst_abspath, img)
 
-    except:
-        print '##{} error##', xml_name
+    except Exception as e:
+        print ('##{} error## {}'.format(xml_name, str(e)))
 
 def process_start(xml_list,xml_folder, img_folder,dst_folder, flag_cropNotdraw=True):
     tasks = []
@@ -232,13 +148,13 @@ def task_start(filepaths, batch_size=5, xml_folder='./Annotations', img_folder='
     if not os.path.exists(dst_folder):
         os.makedirs(dst_folder)
 
-    for idx in range(num / batch_size):
+    for idx in range(num // batch_size):
         url_list = filepaths[idx * batch_size:(idx + 1) * batch_size]
         p = Process(target=process_start, args=(url_list,xml_folder, img_folder,dst_folder,flag_cropNotdraw,))
         p.start()
 
     if num % batch_size > 0:
-        idx = num / batch_size
+        idx = num // batch_size
         url_list = filepaths[idx * batch_size:]
         p = Process(target=process_start, args=(url_list, xml_folder, img_folder, dst_folder,flag_cropNotdraw,))
         p.start()
@@ -249,7 +165,7 @@ if __name__=='__main__':
     img_folder = 'JPEGImages'
     dst_folder = 'cropImg'
 
-    flag_cropNotDraw = False  # 画整体结果，非裁剪成单独类别
+    flag_cropNotDraw = True  # 画整体结果，非裁剪成单独类别
     #初始化存图路径
     if flag_cropNotDraw:
         for obj in classes:
@@ -301,5 +217,5 @@ if __name__=='__main__':
                         cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
                 cv2.imwrite(dst_abspath, img)
         except:
-            print '##{} error##', name
+            print ('##{} error##', name)
 
