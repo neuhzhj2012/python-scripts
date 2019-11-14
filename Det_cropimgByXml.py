@@ -124,7 +124,7 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_cropNotDraw=Tru
                     img_crop = img[y1:y2, x1:x2, :]
                     cv2.imwrite(dst_abspath, img_crop)
         else:
-            for obj, locs in parts.iteritems():
+            for obj, locs in parts.items():
                 dst_name = xml_name[:-4] + '.jpg'
                 dst_abspath = os.path.join(dst_folder, dst_name)
                 color = cmap[classes.index(obj)%len(classes)].astype( np.uint8).tolist()
