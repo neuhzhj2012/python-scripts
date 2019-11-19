@@ -152,29 +152,31 @@ def parseXmlOne(xml_name,xml_folder, img_folder,dst_folder, flag_saveRoiXml = Fa
                 for idx, loc in enumerate(locs):
                     dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
                     basic_info['filename'] = dst_name
-                    anno_tree = writeXmlRoot(basic_info)
 
                     dst_abspath = os.path.join(dst_folder, obj, dst_name)
                     xmin, ymin, xmax, ymax = loc
                     w_box = xmax - xmin
                     h_box = ymax - ymin
-                    xmin = int(max(0, xmin - w_box / 2))
-                    ymin = int(max(0, ymin - h_box / 2))
-                    xmax = int(min(basic_info['width'], xmax + w_box / 2))
-                    ymax = int(min(basic_info['height'], ymax + h_box / 2))
+                    xmin_crop = int(max(0, xmin - w_box / 2))
+                    ymin_crop = int(max(0, ymin - h_box / 2))
+                    xmax_crop = int(min(basic_info['width'], xmax + w_box / 2))
+                    ymax_crop = int(min(basic_info['height'], ymax + h_box / 2))
 
-                    img_crop = img[ymin:ymax, xmin:xmax, :]
+                    img_crop = img[ymin_crop:ymax_crop, xmin_crop:xmax_crop, :]
                     cv2.imwrite(dst_abspath, img_crop)
 
-                    xmax -= xmin
-                    ymax -= ymin
-                    xmin = 0
-                    ymin = 0
+                    xmax -= xmin_crop
+                    ymax -= ymin_crop
+                    xmin -= xmin_crop
+                    ymin -= ymin_crop
+                    basic_info['width'] = xmax_crop - xmin_crop + 1
+                    basic_info['height'] = ymax_crop - ymin_crop + 1
 
                     object = dict()
                     object['class_name'] = obj
                     object['bndbox'] = list()
                     object['bndbox'] = [xmin, ymin, xmax, ymax]
+                    anno_tree = writeXmlRoot(basic_info)
                     anno_tree.append(writeXmlSubRoot(object, bbox_type='xyxy'))
                     writeXml(anno_tree, os.path.join(dst_folder, dst_name.replace('jpg', 'xml')))
 
@@ -294,33 +296,36 @@ if __name__=='__main__':
                 for idx, loc in enumerate(locs):
                     dst_name = xml_name[:-4] + "_" + str(idx) + '.jpg'
                     basic_info['filename'] = dst_name
-                    anno_tree = writeXmlRoot(basic_info)
 
                     dst_abspath = os.path.join(dst_folder, obj, dst_name)
                     xmin, ymin, xmax, ymax = loc
                     w_box = xmax - xmin
                     h_box = ymax - ymin
-                    xmin = int(max(0, xmin - w_box / 2))
-                    ymin = int(max(0, ymin - h_box / 2))
-                    xmax = int(min(basic_info['width'], xmax + w_box / 2))
-                    ymax = int(min(basic_info['height'], ymax + h_box / 2))
+                    xmin_crop = int(max(0, xmin - w_box / 2))
+                    ymin_crop = int(max(0, ymin - h_box / 2))
+                    xmax_crop = int(min(basic_info['width'], xmax + w_box / 2))
+                    ymax_crop = int(min(basic_info['height'], ymax + h_box / 2))
 
-                    img_crop = img[ymin:ymax, xmin:xmax, :]
+                    img_crop = img[ymin_crop:ymax_crop, xmin_crop:xmax_crop, :]
                     cv2.imwrite(dst_abspath, img_crop)
 
-                    xmax -= xmin
-                    ymax -= ymin
-                    xmin = 0
-                    ymin = 0
+                    xmax -= xmin_crop
+                    ymax -= ymin_crop
+                    xmin -= xmin_crop
+                    ymin -= ymin_crop
+                    basic_info['width'] = xmax_crop - xmin_crop + 1
+                    basic_info['height'] = ymax_crop - ymin_crop + 1
+
                     object = dict()
                     object['class_name'] = obj
                     object['bndbox'] = list()
                     object['bndbox'] = [xmin, ymin, xmax, ymax]
+                    anno_tree = writeXmlRoot(basic_info)
                     anno_tree.append(writeXmlSubRoot(object, bbox_type='xyxy'))
                     writeXml(anno_tree, os.path.join(dst_folder, dst_name.replace('jpg', 'xml')))
 
             # writeXml(anno_tree, os.path.join(dst_folder, xml_name))
-            if flag_cropNotDraw:  # 保存单个目标区域
+            if flag_cropNotDraw: # 保存单个目标区域
                 # for obj, locs in parts.iteritems(): #py2
                 for obj, locs in parts.items():
                     for idx, loc in enumerate(locs):
@@ -334,7 +339,7 @@ if __name__=='__main__':
                 for obj, locs in parts.items():
                     dst_name = xml_name[:-4] + '.jpg'
                     dst_abspath = os.path.join(dst_folder, dst_name)
-                    color = cmap[classes.index(obj) % len(classes)].astype(np.uint8).tolist()
+                    color = cmap[classes.index(obj)%len(classes)].astype( np.uint8).tolist()
                     for idx, loc in enumerate(locs):
                         x1, y1, x2, y2 = loc
                         cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
@@ -346,7 +351,7 @@ if __name__=='__main__':
                 img_abspath = img_abspath.replace('jpg', 'JPG')
             img = cv2.imread(img_abspath)
 
-            if flag_cropNotDraw:  # 保存单个目标区域
+            if flag_cropNotDraw: # 保存单个目标区域
                 # for obj, locs in parts.iteritems(): #py2
                 for obj, locs in parts.items():
                     for idx, loc in enumerate(locs):
@@ -360,7 +365,7 @@ if __name__=='__main__':
                 for obj, locs in parts.items():
                     dst_name = xml_name[:-4] + '.jpg'
                     dst_abspath = os.path.join(dst_folder, dst_name)
-                    color = cmap[classes.index(obj) % len(classes)].astype(np.uint8).tolist()
+                    color = cmap[classes.index(obj)%len(classes)].astype( np.uint8).tolist()
                     for idx, loc in enumerate(locs):
                         x1, y1, x2, y2 = loc
                         cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
