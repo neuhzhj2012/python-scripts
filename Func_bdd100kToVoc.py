@@ -82,15 +82,16 @@ def fetch(info, folder):
             if not os.path.exists(dst_folder):
                 os.makedirs(dst_folder)
             basic_info['filename']=name
+            anno_tree = writeXmlRoot(basic_info)
             for obj, locs in rois.items():  #扩充roi区域并生成新xml文件
                 for idx, loc in enumerate(locs):
                     xmin, ymin, xmax, ymax = loc
                     object = dict()
                     object['class_name'] = obj
                     object['bndbox'] = list()
-                    object['bndbox'] = [xmin, ymin, xmax, ymax]
-                    anno_tree = writeXmlRoot(basic_info)
+                    object['bndbox'] = [int(xmin), int(ymin), int(xmax), int(ymax)]
                     anno_tree.append(writeXmlSubRoot(object, bbox_type='xyxy'))
+
             writeXml(anno_tree, os.path.join(dst_folder, name.replace('jpg', 'xml')))
     except Exception as e:
         print ("####name: {}, error: {}####".format(info,e))
@@ -151,16 +152,17 @@ if __name__ == '__main__':
             dst_folder = os.path.join(rstdir, attrs_time)
             if not os.path.exists(dst_folder):
                 os.makedirs(dst_folder)
-            basic_info['filename'] = name
-            for obj, locs in rois.items():  # 扩充roi区域并生成新xml文件
+            basic_info['filename']=name
+            anno_tree = writeXmlRoot(basic_info)
+            for obj, locs in rois.items():  #扩充roi区域并生成新xml文件
                 for idx, loc in enumerate(locs):
                     xmin, ymin, xmax, ymax = loc
                     object = dict()
                     object['class_name'] = obj
                     object['bndbox'] = list()
-                    object['bndbox'] = [xmin, ymin, xmax, ymax]
-                    anno_tree = writeXmlRoot(basic_info)
+                    object['bndbox'] = [int(xmin), int(ymin), int(xmax), int(ymax)]
                     anno_tree.append(writeXmlSubRoot(object, bbox_type='xyxy'))
+
             writeXml(anno_tree, os.path.join(dst_folder, name.replace('jpg', 'xml')))
         break
 
