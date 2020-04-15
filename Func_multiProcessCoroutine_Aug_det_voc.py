@@ -171,10 +171,10 @@ def crop(img_path, class_loc):
             xmax_all = max(xmax, xmax_all)
             ymax_all = max(ymax, ymax_all)
 
-    xmin_ = np.random.choice(range(0, xmin_all), 1)[0]
-    ymin_ = np.random.choice(range(0, ymin_all), 1)[0]
-    xmax_ = np.random.choice(range(xmax_all, img_w), 1)[0]
-    ymax_ = np.random.choice(range(ymax_all, img_h), 1)[0]
+    xmin_ = np.random.choice(range(0, xmin_all), 1)[0] if xmin_all > 0 else 0
+    ymin_ = np.random.choice(range(0, ymin_all), 1)[0] if ymin_all > 0 else 0
+    xmax_ = np.random.choice(range(xmax_all, img_w), 1)[0] if xmax_all < img_w else img_w
+    ymax_ = np.random.choice(range(ymax_all, img_h), 1)[0] if ymax_all < img_h else img_h
 
     img_crop = img[ymin_:ymax_, xmin_:xmax_,:]
     print(ymin_, ymax_, xmin_, xmax_, img_crop.shape)
