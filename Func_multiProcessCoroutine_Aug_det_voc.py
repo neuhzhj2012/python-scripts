@@ -217,7 +217,7 @@ def fetch(url, subfolder, folder):
             filename = 'crop_' + str(uuid.uuid4())[:5] + '_' + img_name
             cv2.imwrite(os.path.join(folder, filename), img_op)
 
-        img_h, img_w = img_op.shape
+        img_h, img_w = img_op.shape[:2]
         img_depth = 3
         basic_info['folder'] = 'onlineV1_aug'
         basic_info['filename'] = filename
