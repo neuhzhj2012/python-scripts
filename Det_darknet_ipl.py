@@ -194,7 +194,8 @@ if __name__ == "__main__":
         img_paths = [input]
     else:
         img_paths = getAllFiles(input)
-    detObj = DARKNET()
+    detObj = DARKNET(so_path = './libdarknet.so', configPath = "./cfg/yolov4.cfg", weightPath = "yolov4.weights",\
+                 metaPath= "./cfg/coco.data")
     roi_labels = ['motorbike', 'bicycle', 'person', 'car', 'bus', 'truck']
 
     for img_path in img_paths:
