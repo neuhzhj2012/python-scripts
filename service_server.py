@@ -1,5 +1,7 @@
 # encoding=utf-8
 import os, time, logging, argparse, sys
+import asyncio
+import threading
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
@@ -12,6 +14,45 @@ if int(sys.version[0]) == 2:
     import json
 else:
     import simplejson as json
+
+class ADD():
+    def __init__(self):
+        self.num = 0
+    def add(self, value):
+        self.num += value
+    def getValue(self):
+        return self.num
+    def reset(self):
+        self.num=0
+
+thread_local = threading.local() #局部线程
+def get_method(pvid):
+    if not hasattr(thread_local, "cropObj"):
+        thread_local.cropObj = ADD()
+        loginfo.info(pvid + '\tInit cropObj')
+    return thread_local.cropObj
+
+def img_cut(values, pvid): #图片裁剪主程序
+    cropObj = get_method(pvid) #当前线程的类对象
+    tm_start = time.time()
+    cropObj.reset() #清空当前缓存信息
+    loginfo.info(pvid + '\tReset, num: {}'.format(cropObj.getValue()))
+    for value in values:
+        try:
+        #if True:
+            tm_tmp = time.time()
+            cropObj.add(value)
+            loginfo.info(pvid + '\ttm_label_crop: {}, {}'.format(time.time()-tm_tmp, os.path.basename(imginfo[0])))
+        except Exception as e:
+        #else:
+            loginfo.error(pvid+'\top error: {}'.format(str(e)))
+    returncode = 1001
+    tm_svc = time.time() - tm_start
+    result = {'message': 'OK', 'code': returncode, 'data': 'data'}
+
+    loginfo.info(pvid + "rst: {}".format(result))
+    return result
+
 
 class MainHeartHandler(tornado.web.RequestHandler):
     '''
@@ -89,6 +130,21 @@ class TornadoHandler(tornado.web.RequestHandler):
             self.write(json.dumps(result))
         return
 
+
+class WebServer(threading.Thread):
+    def run(self):
+        asyncio.set_event_loop(asyncio.new_event_loop()) #不同服务线程的事件
+        application = tornado.web.Application([(r"/detect/cut", TornadoHandler),(r"/health", MainHeartHandler)])
+        http_server = tornado.httpserver.HTTPServer(application)
+        http_server.listen(svcport)
+        tornado.ioloop.IOLoop.instance().start()
+
+svcport = '8001' #默认端口
+def main_thread(port):
+    loginfo.info("Listen...")
+    global svcport
+    svcport = port
+    WebServer().start()
 
 def main(port):
     loginfo.info('Listen...')
