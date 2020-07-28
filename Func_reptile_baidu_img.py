@@ -2,8 +2,13 @@
 """根据搜索词下载百度图片"""
 import re
 import sys
-import urllib
+import chardet
 import requests
+if sys.version_info[0]==2:
+    import urllib
+else:
+    import urllib.parse as urllib
+
 
 def get_onepage_urls(onepageurl):
     """获取单个翻页的所有图片的urls+当前翻页的下一翻页的url"""
@@ -11,8 +16,13 @@ def get_onepage_urls(onepageurl):
         print('已到最后一页, 结束')
         return [], ''
     try:
+        if sys.version_info[0]==3:
+            onepageurl = onepageurl.encode(encoding="utf-8")
         html = requests.get(onepageurl).text #unicode需要转换为utf-8编码格式
-        html = html.encode('utf-8')
+        if sys.version_info[0] == 2:
+            html = html.encode('utf-8')
+        # encode_type = chardet.detect(html)
+        # html = html.decode(encode_type['encoding'])
     except Exception as e:
         print(e)
         pic_urls = []
@@ -42,11 +52,11 @@ def down_pic(pic_urls):
 
 
 if __name__ == '__main__':
-    keywords = ['情侣','情侣 旅拍','情侣 婚纱']  # 关键词, 改为你想输入的词即可, 相当于在百度图片里搜索一样
+    keywords = ['猫','狗','仓鼠']  # 关键词, 改为你想输入的词即可, 相当于在百度图片里搜索一样
     url_init_first = r'http://image.baidu.com/search/flip?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&fm=result&fr=&sf=1&fmq=1497491098685_R&pv=&ic=0&nc=1&z=&se=1&showtab=0&fb=0&width=&height=&face=0&istype=2&ie=utf-8&ctd=1497491098685%5E00_1519X735&word='
 
     all_pic_urls = []
-    default_urls = 800
+    default_urls = 10
 
     for keyword in keywords:
         fanye_count = 1  # 累计翻页数
