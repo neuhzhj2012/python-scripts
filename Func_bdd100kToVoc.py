@@ -73,10 +73,10 @@ def fetch(info, folder):
                 continue
             flag_xml = True
             # if 'box2d' in roi_info.keys():
-            xxyy = list(roi_info['box2d'].values())
+            xyxy = [roi_info['box2d']['x1'],roi_info['box2d']['y1'], roi_info['box2d']['x2'],roi_info['box2d']['y2']]
             if label not in rois.keys():
                 rois[label]=list()
-            rois[label].append(xxyy)
+            rois[label].append(xyxy)
         if flag_xml:
             dst_folder = os.path.join(folder, attrs_time)
             if not os.path.exists(dst_folder):
@@ -144,10 +144,10 @@ if __name__ == '__main__':
                 continue
             flag_xml = True
             # if 'box2d' in roi_info.keys():
-            xxyy = list(roi_info['box2d'].values())
+            xyxy = [roi_info['box2d']['x1'],roi_info['box2d']['y1'], roi_info['box2d']['x2'],roi_info['box2d']['y2']]
             if label not in rois.keys():
                 rois[label] = list()
-            rois[label].append(xxyy)
+            rois[label].append(xyxy)
         if flag_xml:
             dst_folder = os.path.join(rstdir, attrs_time)
             if not os.path.exists(dst_folder):
