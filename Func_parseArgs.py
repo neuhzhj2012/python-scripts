@@ -26,6 +26,23 @@ def param_args():
     args = vars(ap.parse_args()) #{'svcPort': 29977, 'image': None, 'imgSize': None, 'indir': None}
     return args
 
+def parse_args2(args):
+    """
+    Parse the arguments.
+    """
+    parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
+    subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
+    subparsers.required = True
+
+    coco_parser = subparsers.add_parser('coco')
+    coco_parser.add_argument('coco_path', help='Path to dataset directory (ie. /tmp/COCO).')
+
+    pascal_parser = subparsers.add_parser('pascal')
+    pascal_parser.add_argument('pascal_path', help='Path to dataset directory (ie. /tmp/VOCdevkit).')
+    parser.add_argument('--batch-size', help='Size of the batches.', default=1, type=int)
+    print(vars(parser.parse_args(args)))
+    return (parser.parse_args(args))
+
 if __name__ == '__main__':
     #基于sys.argv的参数解析 python *.py 0.jpg 'data' 50 100
     # print ('argv: ',sys.argv)
