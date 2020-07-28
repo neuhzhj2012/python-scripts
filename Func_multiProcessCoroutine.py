@@ -6,29 +6,48 @@ import sys
 import os
 import numpy
 import urllib.request as urllib
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import time
 from gevent import monkey
 
 monkey.patch_all()
 
-def fetch(url, name, folder):
-    abspath=os.path.join(folder, name)
-    try:
+session = requests.Session()
+retry = Retry(connect=3, backoff_factor=0.5)
+adapter = HTTPAdapter(max_retries=retry)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+
+def fetch(url, subfolder, folder):
+    name=os.path.basename(url)
+    if len(name.split('.')) ==1:
+        name +='.jpg'
+    abspath=os.path.join(folder, subfolder + '_' + name)
+    #if not os.path.exists(os.path.dirname(abspath)):
+        #os.makedirs(os.path.dirname(abspath))
+    
+    if True:
+    #try:
         tm_start=time.time()
         # urllib.urlretrieve(url, os.path.join(folder, os.path.basename(url)))
-        urllib.urlretrieve(url, abspath)
+        #urllib.urlretrieve(url, abspath) #易下载不全
 
-        '''
+        
         #way2
-        res = requests.get(imgUrl, timeout=15)
-        assert int(res.status_code) == 200
+        #res = requests.get(url, timeout=15)
+        #res = session.get(url,headers={'User-Agent': 'firefox'}, timeout=15)
+        res = session.get(url, timeout=15)
+        print (int(res.status_code), url)
+        assert int(res.status_code) == 200 #查看urls是否有空格
 
-        with open(abspath, 'wb') as fp:
+        with open(abspath.replace('png', 'jpg'), 'wb') as fp:
             fp.write(res.content)
-        '''
+        
         tm_end = time.time()
         print ('name: {} done, tm_svc: {}'.format(name, tm_end-tm_start))
-    except Exception as e:
+    #except Exception as e:
+    else:
         print ("####name: {}, error: {}####".format(name,e))
 
         if os.path.exists(abspath):
@@ -37,9 +56,11 @@ def fetch(url, name, folder):
 def process_start(url_list, folder):
     tasks = []
     for idx, urlinfo in enumerate(url_list):
-        url=urlinfo.decode('utf-8')
-        name=os.path.basename(urlinfo).decode('utf-8')
-        tasks.append(gevent.spawn(fetch, url,name, folder))
+        
+        url=urlinfo.decode('utf-8').split('\t')[0]
+        #print (urlinfo.decode('utf-8').split('\t'))
+        subfolder=urlinfo.decode('utf-8').split('\t')[1].split('_')[0]
+        tasks.append(gevent.spawn(fetch, url,subfolder, folder))
     gevent.joinall(tasks)  # 使用协程来执行
 
 
