@@ -5,10 +5,15 @@ import logging
 # from logging.handlers import TimedRotatingFileHandler
 from myhandlers import TimedRotatingFileHandler
 
-loginfo = logging.getLogger("info")
+log_dir='/workspace/logs/'
+if not os.path.isdir(log_dir):
+    os.makedirs(log_dir)
+# loginfo = logging.getLogger("info")
+loginfo = logging.getLogger("Service")
 strtime = time.strftime("%Y%m%d%H", time.localtime())
-formatter = logging.Formatter('%(asctime)s\tthread-%(thread)d\t%(levelname)s\t%(message)s\t', "%Y-%m-%d %H:%M:%S") #默认时间格式为毫秒级
-fileTimeHandlerinfo = TimedRotatingFileHandler(filename=os.path.join('logs', 'dmcv_recog_info.' + strtime), backupCount=2, encoding='utf-8',  when="H", utc=False)
+formatter = logging.Formatter('%(asctime)s\tthread-%(thread)d\t%(levelname)s\t\t%(message)s', "%Y-%m-%d %H:%M:%S")
+fileTimeHandlerinfo = TimedRotatingFileHandler(filename=os.path.join(log_dir, 'dmcv_main.' + strtime),backupCount=2*24, encoding='utf-8', when="H", utc=False) #保留3天的日志量
+fileTimeHandlerinfo.suffix = "%Y%m%d%H"
 fileTimeHandlerinfo.setFormatter(formatter)
 logging.basicConfig(level=logging.INFO)
 loginfo.addHandler(fileTimeHandlerinfo)
