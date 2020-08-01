@@ -1,17 +1,18 @@
 # encoding: utf-8
-import requests
 from multiprocessing import Process
 import gevent
 import sys
 import os
 import numpy
+from gevent import monkey #调制至request前，因为有时会报RecursionError
+
+monkey.patch_all()
+import requests
 import urllib.request as urllib
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import time
-from gevent import monkey
 
-monkey.patch_all()
 
 session = requests.Session()
 retry = Retry(connect=3, backoff_factor=0.5)
