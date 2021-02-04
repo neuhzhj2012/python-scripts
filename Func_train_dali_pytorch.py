@@ -1,9 +1,10 @@
 '''
 基于dali加载数据和focusloss作为损失的pytorch训练代码
-python3 train_dali_log.py -d data/AD -c 4 -b 32 -n 75 -f -fa -a "[0.0745787, 0.680225, 0.070105, 0.175092]"
+python3 train_dali_log.py -d data/AD -c 4 -b 32 -t 3 -n 75 -f -fa -a "[0.0745787, 0.680225, 0.070105, 0.175092]"
  -d表示数据存放目录,二级结构，train/val； classA, clasB
  -c 表示类别数量
  -b batchsize
+ -t num workers of loading data
  -f 是否使用focus loss
  -fa 是否对focus loss增加样本权重
  -a  focus loss的样本权重，顺序为ls时查看到的目录顺序
@@ -542,4 +543,3 @@ if __name__ == '__main__':
     torch.save(model_ft.state_dict(), dst_model_path)
     print('savemodel: {}'.format(dst_model_path))
     logger.append('savemodel: {}'.format(dst_model_path))
-    
