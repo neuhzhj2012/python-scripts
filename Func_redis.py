@@ -11,9 +11,9 @@ class MYREDIS(object):
     maxPoolTotal = 1024
 
     name_Admin = 'dmcv'
-    password_Admin = '06b24fa1-9281-acde48001122'
+    password_Admin = '11111111111'
 
-    def __init__(self, host='dmcv-online-v2.codis.yzpsg2.in.com.cn', port='19375'):
+    def __init__(self, host='dmcv.in.com.cn', port='11111'):
         super().__init__()
         redisPools = redis.ConnectionPool(host=host, port=port, password=self.password,
                                           max_connections=self.maxPoolTotal, decode_responses=True,
@@ -67,7 +67,7 @@ class MYREDIS(object):
 
     def test(self):
         service_type = "test"
-        service_key = "c793b8a1-c21c-8084-68f728d8"
+        service_key = "111111111"
 
         print('valid: {}'.format(self.isValidUser(service_type, service_key)))
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     exit(1)
 
     name_Admin = 'dmcv'
-    password_Admin = '06b24fa1-9281-acde48001122'
+    password_Admin = '11111111111'
     if not myredis.isValidAdmin(name_Admin, password_Admin):
         raise ValueError('invalid Admin account!.')
 
