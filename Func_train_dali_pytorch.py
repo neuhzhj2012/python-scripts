@@ -1,14 +1,13 @@
 '''
 基于dali加载数据和focusloss作为损失的pytorch训练代码
 python3 train_dali_log.py -d data/AD -c 4 -b 32 -t 3 -n 75 -f -fa -a "[0.0745787, 0.680225, 0.070105, 0.175092]"
- -d表示数据存放目录,二级结构，train/val； classA, clasB
- -c 表示类别数量
- -b batchsize
- -t num workers of loading data
- -f 是否使用focus loss
- -fa 是否对focus loss增加样本权重
- -a  focus loss的样本权重，顺序为ls时查看到的目录顺序
-
+-d表示数据存放目录,二级结构，train/val； classA, clasB
+-c 表示类别数量
+-b batchsize
+-t num workers of loading data
+-f 是否使用focus loss
+-fa 是否对focus loss增加样本权重
+-a  focus loss的样本权重，顺序为ls时查看到的目录顺序
 '''
 from __future__ import print_function, division
 
@@ -29,6 +28,7 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime
 from logger import Logger
+from tensorboardX import SummaryWriter
 
 from PIL import ImageFile
 from PIL import Image
@@ -43,6 +43,38 @@ import nvidia.dali.ops as ops
 import nvidia.dali.types as types
 from nvidia.dali.pipeline import Pipeline
 from nvidia.dali.plugin.pytorch import DALIClassificationIterator, DALIGenericIterator
+
+
+
+class FileReadPipeline(Pipeline):
+    def __init__(self, batch_size, num_threads, device_id, num_gpus):
+        super(FileReadPipeline, self).__init__(batch_size, num_threads, device_id)
+        mean = (0.485 * 255, 0.456 * 255, 0.406 * 255)
+        std = (0.229 * 255, 0.224 * 255, 0.225 * 255)
+        size = 224
+        self.input = ops.FileReader(file_root=data_dir)
+        self.cmnp = ops.CropMirrorNormalize(device="gpu",
+                                            output_dtype=types.FLOAT,
+                                            output_layout=types.NCHW,
+                                            crop=(size, size),
+                                            image_type=types.RGB,
+                                            mean=mean,
+                                            std=std)
+
+        self.decode = ops.ImageDecoder(device=device, output_type=types.RGB)
+
+        # Resize to desired size.  To match torchvision dataloader, use triangular interpolation
+        self.res = ops.Resize(device=self.dali_device, resize_shorter=size, interp_type=types.INTERP_TRIANGULAR)
+
+    def define_graph(self):
+        images, labels = self.input(name="Reader")
+        images = self.decode(images)
+        images = self.res(images)
+        images = self.cmnp(images)
+
+        return self.base_define_graph(images, labels)
+
+
 
 
 def random_transform(index):
@@ -258,6 +290,11 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, **kwargs)
         logger.append('Epoch {}/{}'.format(epoch, num_epochs - 1))           
         logger.append('-' * 10)
 
+        # for param_group in optimizer.param_groups:
+        writer.add_scalar('LR',
+                          scheduler.get_last_lr()[0], #1.4版本以上的用last_lr,以下的用scheduler.get_lr()[0]
+                         epoch)
+
         #train_loader = get_imagenet_iter_dali(type='train', image_dir=data_dir, batch_size=batch_size,
         #                                  num_threads=num_workers, crop=224, device_id=0, num_gpus=1)
         #val_loader = get_imagenet_iter_dali(type='val', image_dir=data_dir, batch_size=batch_size,
@@ -328,6 +365,13 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, **kwargs)
                 phase, epoch_loss, epoch_acc, tm_epoch))
             logger.append('{} Loss: {:.4f} Acc: {:.4f} tm: {}'.format(
                 phase, epoch_loss, epoch_acc, tm_epoch))
+            if phase == 'train':
+                writer.add_scalar('Loss/train_loss', epoch_loss, epoch)
+                writer.add_scalar('Accuracy/train_acc', epoch_acc, epoch)
+            else:
+                writer.add_scalar('Loss/val_loss', epoch_loss, epoch)
+                writer.add_scalar('Accuracy/val_acc', epoch_acc, epoch)
+
 
             # deep copy the model
             if phase == 'val' and epoch_acc > best_acc:
@@ -337,6 +381,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, **kwargs)
         if (epoch % 10 == 0 and epoch > 0):
             torch.save(best_model_wts, 'resnet_ft_{}.pth'.format(epoch))
 
+
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
@@ -345,6 +390,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, **kwargs)
     logger.append('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
     logger.append('Best val Acc: {:4f}'.format(best_acc))
+    writer.close()
 
     # load best model weights
     model.load_state_dict(best_model_wts)
@@ -450,7 +496,7 @@ def getArgs():
     args.add_argument('-c', '--class_nums', help='labels num',type=int,
                       default='1000')
     args.add_argument('-n', '--nepochs', help='train epochs',type=int,
-                      default='30')
+                      default='100')
     args.add_argument('-l', '--learning_ratio', help='init learning ratio',type=float,
                       default='0.01')
     args.add_argument('-b', '--batch_size', help='batch size',type=int,
@@ -491,6 +537,7 @@ if __name__ == '__main__':
 
     data_subfolder = data_dir.split(os.path.sep)[-1] if data_dir[-1] != os.path.sep else data_dir.split(os.path.sep)[-2]
     logger = Logger(os.path.join('trainlog', data_subfolder+'_'+tm_now+'.log'))
+    writer = SummaryWriter(logdir='trainlog',filename_suffix=data_subfolder+'_'+tm_now)
 
     logger.append(args)
     train_loader = get_imagenet_iter_dali(type='train', image_dir=data_dir, batch_size=batch_size,
@@ -543,3 +590,6 @@ if __name__ == '__main__':
     torch.save(model_ft.state_dict(), dst_model_path)
     print('savemodel: {}'.format(dst_model_path))
     logger.append('savemodel: {}'.format(dst_model_path))
+    
+   
+
