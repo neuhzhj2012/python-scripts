@@ -40,8 +40,12 @@ def colormap(rgb=False):
     return color_list
 
 if __name__ == '__main__':
-    cmap = colormap(rgb=False)
-    color_num = cmap.shape[0]
+    # cmap = colormap(rgb=False)
+    # color_num = cmap.shape[0]
+
+    color_num = 50
+    random.seed(10)
+    cmap = [[random.randint(0, 255) for _ in range(3)] for _ in range(color_num)]
 
     recth = 10
     rectw = 18
